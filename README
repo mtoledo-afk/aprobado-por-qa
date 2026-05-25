@@ -1,0 +1,18 @@
+# Aprobado por QA™ - Setup
+
+### 1. Servidor (Render)
+- Crea un Web Service en Render.
+- Conecta tu repo de GitHub.
+- Render detectará el `package.json` y ejecutará `npm start`.
+- Copia la URL que te da (ej: `https://qa-retro.onrender.com`).
+
+### 2. Cliente (GitHub Pages)
+- En `index.html`, busca `REPLACE_WITH_YOUR_RENDER_URL` y pega tu URL de Render.
+- Sube el archivo a GitHub.
+- Activa GitHub Pages en Settings.
+
+### Reglas de 2 vueltas
+- El juego monitorea `laps`. 
+- Al caer en una casilla, el jugador responde y el equipo vota. 
+- 👍 Bien: +5 STB / +1 QA.
+- 👎 Mal: -10 STB.
