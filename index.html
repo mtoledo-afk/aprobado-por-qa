@@ -2,132 +2,969 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aprobado por QA™</title>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
-    :root { --bg: #121212; --cell: 100px; --accent: #f1c40f; --danger: #e74c3c; --success: #2ecc71; }
-    body { background: var(--bg); color: #fff; font-family: 'Press Start 2P', cursive; margin: 0; display: flex; flex-direction: column; align-items: center; font-size: 10px; }
-    
-    /* Pantalla de Inicio */
-    #home { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-    .pixel-dice { width: 50px; height: 50px; background: white; border: 4px solid #000; position: relative; animation: bounce 1.5s infinite; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#22c55e;--r:#ef4444;--y:#eab308;--b:#3b82f6;--p:#a855f7;--o:#f97316;
+  --dark:#0a0a14;--darker:#06060e;--card:#10101e;--border:#1e1e38;
+  --text:#e2e8f0;--muted:#64748b;
+}
+html,body{height:100%;background:var(--darker);color:var(--text);font-family:'Press Start 2P',monospace;overflow:hidden}
 
-    /* Tablero */
-    #board { display: grid; grid-template-columns: repeat(7, var(--cell)); grid-template-rows: repeat(7, var(--cell)); gap: 4px; background: #333; padding: 10px; border: 8px solid #000; position: relative; margin-top: 20px; }
-    .cell { background: #95a5a6; border: 2px solid #000; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 7px; color: #000; font-weight: bold; }
-    .center { grid-column: 2 / 7; grid-row: 2 / 7; background: #1a1a1a; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .start { background: var(--success); } .danger { background: var(--danger); color: #fff; }
-    .player { width: 20px; height: 20px; position: absolute; z-index: 100; border: 2px solid #000; transition: 0.6s; display: flex; align-items: center; justify-content: center; font-size: 8px; color: #000; }
+/* ════ SCREENS ════ */
+.screen{display:none;width:100%;height:100%}
+.screen.on{display:flex}
 
-    /* UI */
-    #header { display: flex; gap: 20px; padding: 15px; background: #222; border: 4px solid #000; width: fit-content; margin-top: 10px; }
-    #modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 8000; justify-content: center; align-items: center; }
-    .m-box { background: #ecf0f1; color: #000; padding: 20px; border: 8px solid #000; width: 450px; text-align: center; }
-    button { font-family: 'Press Start 2P'; padding: 10px; cursor: pointer; background: var(--accent); border: 4px outset #f39c12; }
+/* ════ START ════ */
+#s-start{flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:repeating-linear-gradient(45deg,#06060e 0,#06060e 12px,#07070f 12px,#07070f 24px)}
+.logo{font-size:clamp(13px,2.5vw,20px);color:var(--g);text-align:center;text-shadow:0 0 24px #22c55e88;line-height:2.2}
+.logo-sub{font-size:clamp(5px,1vw,8px);color:var(--y);letter-spacing:5px;text-align:center}
+
+/* ════ SETUP ════ */
+#s-setup{flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px}
+.setup-card{background:var(--card);border:2px solid var(--border);padding:22px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px}
+.setup-title{font-size:8px;color:var(--y);text-align:center;margin-bottom:4px}
+.setup-label{font-size:5px;color:var(--muted)}
+.cnt-row{display:flex;gap:6px;flex-wrap:wrap}
+.player-rows{display:flex;flex-direction:column;gap:7px}
+.p-row{display:flex;align-items:center;gap:10px;font-size:6px}
+.p-row input{font-family:'VT323',monospace;font-size:19px;background:#080814;border:1px solid var(--border);color:var(--text);padding:5px 10px;flex:1;outline:none}
+.p-row input:focus{border-color:var(--g)}
+.round-btns{display:flex;gap:6px}
+
+/* ════ GAME LAYOUT ════ */
+#s-game{flex-direction:row;align-items:stretch;overflow:hidden}
+
+/* ── LEFT PANEL ── */
+#left-panel{
+  width:30%;min-width:220px;max-width:320px;
+  background:var(--card);border-right:2px solid var(--border);
+  display:flex;flex-direction:column;gap:0;overflow:hidden;flex-shrink:0;
+}
+.lp-section{padding:10px 12px;border-bottom:1px solid var(--border)}
+.lp-section:last-child{border-bottom:none;flex:1;overflow-y:auto;min-height:0}
+
+.lp-logo{font-size:7px;color:var(--g);text-align:center;text-shadow:0 0 12px #22c55e66;line-height:1.9}
+.lp-logo span{font-size:4px;color:var(--y);display:block;letter-spacing:2px;margin-top:2px}
+
+/* stats */
+.stat-row{display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+.stat-lbl{font-size:4px;color:var(--muted);display:flex;justify-content:space-between}
+.stat-lbl b{color:var(--text)}
+.stat-bar{height:8px;background:#080812;border:1px solid #1a1a30;position:relative}
+.stat-fill{height:100%;transition:width .4s}
+
+/* badges row */
+.badges{display:flex;gap:6px}
+.badge{flex:1;border:1px solid;padding:5px 4px;text-align:center}
+.badge-val{font-size:14px;display:block;line-height:1.1}
+.badge-lbl{font-size:3.5px;display:block;margin-top:2px}
+
+/* turn */
+.turn-box{border:2px solid var(--g);padding:6px 8px;text-align:center}
+.turn-lbl{font-size:4px;color:var(--muted);margin-bottom:3px}
+.turn-name{font-size:6px}
+
+/* dice */
+.dice-row{display:flex;align-items:center;gap:8px}
+.dice-face{font-size:30px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border:2px solid var(--y);background:#0c0c00;flex-shrink:0}
+.dice-right{flex:1;display:flex;flex-direction:column;gap:5px}
+
+/* last card */
+.last-card{border:2px solid #2a2a40;padding:7px;text-align:center;background:#0c0c1c}
+.lc-icon{font-size:20px;margin-bottom:3px}
+.lc-name{font-size:4.5px;color:var(--y);line-height:1.5}
+.lc-desc{font-size:3.5px;color:var(--muted);margin-top:3px;line-height:1.7}
+
+/* players */
+.player-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #141428;font-size:4px}
+.player-item:last-child{border-bottom:none}
+.player-item.active-p{padding:5px 5px;background:#0c1a0c;border-left:3px solid var(--g);border-bottom:1px solid #141428}
+.pi-emoji{font-size:14px;flex-shrink:0}
+.pi-info{flex:1}
+.pi-name{font-size:5px;margin-bottom:2px}
+.pi-stats{color:var(--muted);font-size:3.5px;line-height:1.8}
+
+/* log */
+.log-entry{font-size:3.5px;line-height:2;color:var(--muted)}
+.log-g{color:var(--g)}.log-r{color:var(--r)}.log-y{color:var(--y)}.log-p{color:var(--p)}
+
+/* ── RIGHT BOARD ── */
+#right-board{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:10px;background:var(--darker);overflow:hidden;
+  min-width:0;
+}
+
+/* Board fills the right panel, always square, cells uniform */
+.board{
+  display:grid;
+  /* 7 columns: corner + 5 edge + corner  all same computed size */
+  gap:2px;
+  /* JS sets --bs (board-size) as a px value based on container */
+  width:var(--board-px, 100%);
+  height:var(--board-px, 100%);
+  grid-template-columns: calc(var(--cell-px,60px) * 1.35) repeat(5, var(--cell-px,60px)) calc(var(--cell-px,60px) * 1.35);
+  grid-template-rows:    calc(var(--cell-px,60px) * 1.35) repeat(5, var(--cell-px,60px)) calc(var(--cell-px,60px) * 1.35);
+  flex-shrink:0;
+}
+
+.bc{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:1px solid #1a1a2e;background:var(--card);
+  position:relative;overflow:hidden;
+  transition:border-color .15s;
+}
+
+.bc-corner{
+  background:#0c0c1c;border:2px solid #252545;
+  font-size:calc(var(--icon-size,14px) * 1.5);gap:3px;
+}
+.bc-corner .cn-label{font-size:clamp(3px,.5vw,4.5px);color:var(--muted);text-align:center;line-height:1.5}
+
+/* edge cells uniform */
+.bc-top   {flex-direction:column;border-bottom:3px solid}
+.bc-bottom{flex-direction:column-reverse;border-top:3px solid}
+.bc-left  {flex-direction:row-reverse;border-right:3px solid}
+.bc-right {flex-direction:row;border-left:3px solid;transform:rotate(180deg)}
+
+.bc-positive{border-color:#1a3a1a!important}.bc-positive.bc-top{border-bottom-color:var(--g)!important}.bc-positive.bc-bottom{border-top-color:var(--g)!important}.bc-positive.bc-left{border-right-color:var(--g)!important}.bc-positive.bc-right{border-left-color:var(--g)!important}
+.bc-negative{border-color:#2a1010!important}.bc-negative.bc-top{border-bottom-color:var(--r)!important}.bc-negative.bc-bottom{border-top-color:var(--r)!important}.bc-negative.bc-left{border-right-color:var(--r)!important}.bc-negative.bc-right{border-left-color:var(--r)!important}
+.bc-ceremony{border-color:#101a2a!important}.bc-ceremony.bc-top{border-bottom-color:var(--b)!important}.bc-ceremony.bc-bottom{border-top-color:var(--b)!important}.bc-ceremony.bc-left{border-right-color:var(--b)!important}.bc-ceremony.bc-right{border-left-color:var(--b)!important}
+.bc-blocker{border-color:#1e102a!important}.bc-blocker.bc-top{border-bottom-color:var(--p)!important}.bc-blocker.bc-bottom{border-top-color:var(--p)!important}.bc-blocker.bc-left{border-right-color:var(--p)!important}.bc-blocker.bc-right{border-left-color:var(--p)!important}
+.bc-neutral{border-color:#1a1a10!important}.bc-neutral.bc-top{border-bottom-color:var(--y)!important}.bc-neutral.bc-bottom{border-top-color:var(--y)!important}.bc-neutral.bc-left{border-right-color:var(--y)!important}.bc-neutral.bc-right{border-left-color:var(--y)!important}
+
+.bc-active{box-shadow:0 0 10px var(--g)!important;border-color:var(--g)!important;z-index:2}
+
+.cell-icon{font-size:var(--icon-size,14px);line-height:1;flex-shrink:0}
+.cell-name{font-size:var(--name-size,3.5px);color:#888;text-align:center;line-height:1.4;padding:1px;overflow:hidden}
+.cell-tokens{display:flex;flex-wrap:wrap;gap:1px;justify-content:center;padding:1px}
+.tok{width:var(--tok-size,9px);height:var(--tok-size,9px);border-radius:50%;border:1.5px solid rgba(0,0,0,.5);font-size:calc(var(--tok-size,9px) * 0.55);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* center area of the board */
+.bc-center{
+  grid-column:2/7;grid-row:2/7;
+  background:#080810;border:1px solid #141428;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+}
+.center-txt{font-size:clamp(5px,.8vw,8px);color:var(--g);text-align:center;line-height:2;text-shadow:0 0 14px #22c55e55}
+.center-sub{font-size:clamp(3px,.5vw,5px);color:var(--muted);text-align:center;letter-spacing:2px}
+.round-pill{font-size:clamp(3px,.5vw,4.5px);padding:4px 10px;border:1px solid var(--y);color:var(--y);text-align:center}
+
+/* ════ OVERLAY ════ */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.ov-box{background:var(--card);border:3px solid var(--y);padding:20px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.ov-title{font-size:9px;color:var(--y);text-align:center}
+.ov-icon{font-size:44px;text-align:center}
+.ov-desc{font-size:5px;color:#bbb;line-height:2;text-align:center}
+.ov-efx{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;font-size:5px}
+.eff-g{color:var(--g)}.eff-r{color:var(--r)}
+.ov-retro{border:2px solid var(--p);padding:12px;background:#08000e;display:flex;flex-direction:column;gap:8px}
+.ov-q{font-size:6px;color:var(--p);line-height:1.9}
+.ov-active-lbl{font-size:4px;color:var(--y);margin-bottom:4px}
+.ov-votes{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ov-sep{border-top:1px solid #2a1a3a;padding-top:8px}
+.ov-team-lbl{font-size:4px;color:var(--p);margin-bottom:6px}
+.team-vote-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:5px}
+.ov-comment{font-family:'VT323',monospace;font-size:17px;width:100%;background:#05000a;border:1px solid #3a1a4a;color:var(--text);padding:5px 8px;resize:none;outline:none}
+.ov-comment:focus{border-color:var(--p)}
+
+/* ════ RETRO / FINAL ════ */
+#s-retro,#s-final{flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;overflow-y:auto}
+.retro-box{background:var(--card);border:2px solid var(--border);padding:18px;width:100%;max-width:560px}
+.retro-h{font-size:8px;color:var(--p);text-align:center;margin-bottom:12px}
+.retro-section{margin-bottom:10px}
+.retro-sh{font-size:5px;margin-bottom:5px}
+.retro-item{font-size:4px;color:var(--muted);line-height:2.3;padding-left:8px}
+.verdict-icon{font-size:52px;text-align:center;margin-bottom:10px}
+.verdict-text{font-size:clamp(8px,2vw,12px);text-align:center}
+
+/* ════ BUTTONS ════ */
+.btn{font-family:'Press Start 2P',monospace;border:2px solid;cursor:pointer;background:transparent;transition:all .1s;letter-spacing:.5px}
+.btn:hover{transform:translate(-1px,-1px)}
+.btn:active{transform:translate(1px,1px);opacity:.8}
+.btn-g{color:var(--g);border-color:var(--g);font-size:6px;padding:8px 14px}.btn-g:hover{background:var(--g);color:#000}
+.btn-y{color:var(--y);border-color:var(--y);font-size:6px;padding:8px 14px}.btn-y:hover{background:var(--y);color:#000}
+.btn-r{color:var(--r);border-color:var(--r);font-size:6px;padding:8px 14px}.btn-r:hover{background:var(--r);color:#000}
+.btn-p{color:var(--p);border-color:var(--p);font-size:6px;padding:8px 14px}.btn-p:hover{background:var(--p);color:#000}
+.btn-b{color:var(--b);border-color:var(--b);font-size:5px;padding:5px 9px}.btn-b:hover{background:var(--b);color:#000}
+.btn-sm{font-size:4px!important;padding:5px 8px!important}
+.btn-xs{font-size:11px!important;padding:8px 14px!important;border-width:2px!important;line-height:1.4}
+
+.blink{animation:bl 1s step-end infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
 </style>
 </head>
 <body>
-    <div id="home">
-        <div class="pixel-dice"></div>
-        <h1 style="color: var(--accent);">APROBADO POR QA™</h1>
-        <p>¿SOBREVIVIRÁN 2 VUELTAS AL SPRINT?</p>
-        <button onclick="join()">UNIRSE AL SPRINT 🚀</button>
+
+<!-- ══ START ══ -->
+<div class="screen on" id="s-start">
+  <div class="logo">APROBADO<br>POR QA™</div>
+  <div class="logo-sub">THE SCRUM RETRO BOARD GAME</div>
+  <div style="font-size:32px;margin:8px 0">🎲</div>
+  <div style="font-size:4.5px;color:var(--muted);text-align:center;line-height:2.8;max-width:300px">
+    Sobrevive el sprint. Gestiona el caos.<br>Aprende como equipo.<br>
+    <span style="color:var(--g)">2–3 vueltas · Sin cartas repetidas por vuelta</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:9px;align-items:center;margin-top:6px">
+    <button class="btn btn-g" onclick="go('setup')">▶ NUEVO SPRINT</button>
+    <button class="btn btn-y btn-sm" onclick="toggleHow()">? CÓMO JUGAR</button>
+  </div>
+  <div id="how" style="display:none;max-width:340px;background:var(--card);border:2px solid var(--border);padding:14px;font-size:4.5px;line-height:2.8;color:#aaa;text-align:left;margin-top:8px">
+    <span style="color:var(--g)">1.</span> Tira el dado en tu turno y avanza<br>
+    <span style="color:var(--g)">2.</span> Cae en casilla → evento con efectos<br>
+    <span style="color:var(--g)">3.</span> Pregunta retro aparece:<br>
+    &nbsp;&nbsp;<span style="color:var(--y)">● Jugador activo</span> → responde<br>
+    &nbsp;&nbsp;<span style="color:var(--p)">● Resto</span> → vota independiente<br>
+    <span style="color:var(--g)">4.</span> 2–3 vueltas sin repetir cartas<br>
+    <span style="color:var(--g)">5.</span> Retro automática al final<br>
+    <span style="color:var(--r)">Sprint Stability → 0 = sprint fallido</span>
+  </div>
+</div>
+
+<!-- ══ SETUP ══ -->
+<div class="screen" id="s-setup">
+  <div class="setup-card">
+    <div class="setup-title">⚙ CONFIGURAR SPRINT</div>
+    <div class="setup-label">¿Cuántos jugadores?</div>
+    <div class="cnt-row" id="cnt-btns">
+      <button class="btn btn-b btn-sm" onclick="setCount(2)">2</button>
+      <button class="btn btn-b btn-sm" onclick="setCount(3)">3</button>
+      <button class="btn btn-b btn-sm" onclick="setCount(4)">4</button>
+      <button class="btn btn-b btn-sm" onclick="setCount(5)">5</button>
+      <button class="btn btn-b btn-sm" onclick="setCount(6)">6</button>
+      <button class="btn btn-b btn-sm" onclick="setCount(9)">9</button>
+    </div>
+    <div id="name-inputs" class="player-rows"></div>
+    <div class="setup-label" style="margin-top:6px">¿Cuántas vueltas?</div>
+    <div class="round-btns">
+      <button class="btn btn-b btn-sm" id="rb2" onclick="setRounds(2)">2 VUELTAS</button>
+      <button class="btn btn-b btn-sm" id="rb3" onclick="setRounds(3)">3 VUELTAS</button>
+    </div>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn btn-g" id="go-btn" style="display:none" onclick="startGame()">▶ INICIAR SPRINT</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GAME ══ -->
+<div class="screen" id="s-game">
+
+  <!-- LEFT PANEL -->
+  <div id="left-panel">
+
+    <!-- Logo -->
+    <div class="lp-section">
+      <div class="lp-logo">APROBADO<br>POR QA™<span>SCRUM RETRO GAME</span></div>
     </div>
 
-    <div id="header">
-        <div style="color: var(--danger)">STB: <span id="stb">100</span>%</div>
-        <div style="color: var(--success)">QA✓: <span id="qa">0</span></div>
-        <div>TURNO: <span id="turn">---</span></div>
+    <!-- Stats -->
+    <div class="lp-section">
+      <div class="stat-row">
+        <div class="stat-lbl">SPRINT STABILITY <b id="sv">100</b></div>
+        <div class="stat-bar"><div class="stat-fill" id="bf-s" style="width:100%;background:var(--g)"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-lbl">TEAM STRESS <b id="stv">0</b></div>
+        <div class="stat-bar"><div class="stat-fill" id="bf-st" style="width:0%;background:var(--r)"></div></div>
+      </div>
+      <div class="badges">
+        <div class="badge" style="border-color:var(--y);color:var(--y)"><span class="badge-val" id="qa-num">5</span><span class="badge-lbl">QA ✓</span></div>
+        <div class="badge" style="border-color:var(--r);color:var(--r)"><span class="badge-val" id="bug-num">0</span><span class="badge-lbl">🐛 BUGS</span></div>
+        <div class="badge" style="border-color:var(--b);color:var(--b)"><span class="badge-val" id="rnd-num">1/<span id="rnd-max">2</span></span><span class="badge-lbl">VUELTA</span></div>
+      </div>
     </div>
 
-    <div id="board">
-        <div class="center">
-            <button id="rollBtn" onclick="socket.emit('roll')">TIRAR DADO 🎲</button>
-            <div id="diceVal" style="font-size: 24px; margin-top: 10px;"></div>
+    <!-- Turn + Dice -->
+    <div class="lp-section">
+      <div class="turn-box" id="turn-box">
+        <div class="turn-lbl">TURNO DE</div>
+        <div class="turn-name" id="turn-name">—</div>
+      </div>
+    </div>
+
+    <div class="lp-section">
+      <div class="dice-row">
+        <div class="dice-face" id="dice">🎲</div>
+        <div class="dice-right">
+          <button class="btn btn-y btn-sm" id="roll-btn" onclick="rollDice()">🎲 TIRAR DADO</button>
+          <div style="font-size:3.5px;color:var(--muted)" id="roll-msg">Esperando turno...</div>
         </div>
+      </div>
     </div>
 
-    <div id="modal">
-        <div class="m-box">
-            <h3 id="m-title"></h3>
-            <p id="m-q" style="font-size: 8px;"></p>
-            <textarea id="m-ans" style="width: 90%; height: 50px; margin: 10px 0;"></textarea>
-            <div id="vote-btns" style="display: none;">
-                <p>EQUIPO: ¿APROBAR RESPUESTA?</p>
-                <button onclick="vote(true)" style="background: var(--success)">SÍ</button>
-                <button onclick="vote(false)" style="background: var(--danger)">NO</button>
-            </div>
-            <button id="confBtn" onclick="showVote()">ENVIAR RESPUESTA</button>
-        </div>
+    <!-- Last card -->
+    <div class="lp-section">
+      <div style="font-size:3.5px;color:var(--muted);margin-bottom:5px">📋 ÚLTIMA CARTA</div>
+      <div class="last-card" id="last-card">
+        <div class="lc-icon">🎲</div>
+        <div class="lc-name">Sin eventos aún</div>
+        <div class="lc-desc">Tira el dado para comenzar</div>
+      </div>
     </div>
 
-    <script>
-        const socket = io("https://aprobado-por-qa.onrender.com"); // <--- CAMBIA ESTO
-        let myId, players = [];
+    <!-- Players -->
+    <div class="lp-section">
+      <div style="font-size:3.5px;color:var(--muted);margin-bottom:5px">👥 EQUIPO</div>
+      <div id="players-list"></div>
+    </div>
 
-        function join() {
-            const n = prompt("Nombre:");
-            if(n) { socket.emit("join", {name: n}); document.getElementById('home').style.display='none'; }
+    <!-- Log -->
+    <div class="lp-section">
+      <div style="font-size:3.5px;color:var(--muted);margin-bottom:4px">📜 LOG</div>
+      <div id="log" style="display:flex;flex-direction:column;gap:1px"></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT BOARD -->
+  <div id="right-board">
+    <div class="board" id="board"></div>
+  </div>
+
+</div>
+
+<!-- EVENT OVERLAY -->
+<div class="overlay" id="overlay" style="display:none">
+  <div class="ov-box">
+    <div class="ov-title" id="ov-title">EVENTO</div>
+    <div class="ov-icon" id="ov-icon">⚡</div>
+    <div class="ov-desc" id="ov-desc"></div>
+    <div class="ov-efx" id="ov-efx"></div>
+    <div class="ov-retro" id="ov-retro" style="display:none">
+      <div class="ov-q" id="ov-q"></div>
+      <div class="ov-active-lbl" id="ov-active-lbl">🎯 TU RESPUESTA:</div>
+      <div class="ov-votes" id="ov-active-votes"></div>
+      <textarea class="ov-comment" id="ov-comment" rows="2" placeholder="Comentario opcional..."></textarea>
+      <div class="ov-sep">
+        <div class="ov-team-lbl">👥 VOTO DEL EQUIPO (todos los demás):</div>
+        <div id="team-vote-rows"></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:6px">
+      <button class="btn btn-g" onclick="closeEvent()">CONTINUAR →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RETRO ══ -->
+<div class="screen" id="s-retro">
+  <div style="font-size:9px;color:var(--p);text-align:center;text-shadow:0 0 14px var(--p)">RETROSPECTIVA</div>
+  <div class="retro-box" id="retro-content"></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+    <button class="btn btn-p" onclick="showFinal()">VER RESULTADO FINAL →</button>
+    <button class="btn btn-b" onclick="downloadReport()">⬇ DESCARGAR REPORTE</button>
+  </div>
+</div>
+
+<!-- ══ FINAL ══ -->
+<div class="screen" id="s-final">
+  <div class="verdict-icon" id="v-icon"></div>
+  <div class="verdict-text" id="v-text"></div>
+  <div class="retro-box" id="final-insights"></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+    <button class="btn btn-g" onclick="go('start')">▶ NUEVO SPRINT</button>
+    <button class="btn btn-b" onclick="downloadReport()">⬇ DESCARGAR REPORTE</button>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────
+const COLORS=['#22c55e','#3b82f6','#ef4444','#eab308','#a855f7','#f97316','#06b6d4','#ec4899','#84cc16'];
+const EMOJIS=['🧑‍💻','👩‍💻','🧑‍🔬','👨‍🎨','🧑‍💼','👩‍🔬','🤖','👩‍💼','🧑‍🎨'];
+const DICE=['⚀','⚁','⚂','⚃','⚄','⚅'];
+
+const ALL_CELLS=[
+  {id:'planning',type:'ceremony',icon:'📋',name:'PLANNING',effect:{stab:5,qa:1},q:'¿Qué tan bien planeamos este sprint?'},
+  {id:'us-ok',type:'positive',icon:'✅',name:'US APROBADA',effect:{stab:4,qa:2},q:'¿Qué hizo exitosa esta historia?'},
+  {id:'scope',type:'negative',icon:'🤡',name:'SCOPE CREEP',effect:{stab:-8,stress:10},q:'¿Cómo manejamos cambios inesperados?'},
+  {id:'coffee',type:'neutral',icon:'☕',name:'COFFEE BREAK',effect:{stab:2,stress:-5},q:null},
+  {id:'bug',type:'negative',icon:'🐛',name:'BUG CRÍTICO',effect:{stab:-10,bugs:2,qa:-1},q:'¿Qué pudo detectarse antes?'},
+  {id:'daily-long',type:'negative',icon:'💬',name:'DAILY x1HR',effect:{stab:-3,stress:8},q:'¿Cómo mejoramos las dailies?'},
+  {id:'code-rev',type:'positive',icon:'🔍',name:'CODE REVIEW',effect:{stab:5,qa:1,bugs:-1},q:'¿Con qué frecuencia hacemos code review?'},
+  {id:'tech-debt',type:'blocker',icon:'🧠',name:'TECH DEBT',effect:{stab:-6,stress:5},q:'¿Qué deuda técnica arrastramos?'},
+  {id:'po-change',type:'negative',icon:'📞',name:'PO CAMBIÓ REQ.',effect:{stab:-12,stress:20,bugs:1},q:'¿Cómo manejamos cambios de requisitos?'},
+  {id:'sprint-rev',type:'ceremony',icon:'🎯',name:'SPRINT REVIEW',effect:{stab:7,qa:2},q:'¿Qué mostramos en el review?'},
+  {id:'prod-inc',type:'negative',icon:'🚒',name:'PROD INCIDENT',effect:{stab:-15,stress:25,bugs:3},q:'¿Qué causó el incidente?'},
+  {id:'qa-pass',type:'positive',icon:'🧪',name:'QA APROBÓ',effect:{stab:6,qa:3},q:'¿Cómo puede QA detectar más antes?'},
+  {id:'dep-fri',type:'negative',icon:'🔥',name:'DEPLOY FRIDAY',effect:{stab:-10,stress:15,bugs:2},q:'¿Necesitamos reglas de deployment?'},
+  {id:'retro-c',type:'ceremony',icon:'🗣️',name:'RETRO CERT.',effect:{stab:5,stress:-15},q:'¿Qué 1 cosa mejoraríamos ahora mismo?'},
+  {id:'pair-prog',type:'positive',icon:'🤝',name:'PAIR PROGRAM',effect:{stab:6,qa:1,bugs:-1},q:'¿Cuándo usamos pair programming?'},
+  {id:'dep-hell',type:'blocker',icon:'⛓️',name:'DEP. HELL',effect:{stab:-8,stress:12},q:'¿Cómo manejamos dependencias externas?'},
+  {id:'velocity',type:'positive',icon:'📈',name:'VELOCITY UP!',effect:{stab:8,qa:2},q:'¿Qué contribuyó a la velocidad?'},
+  {id:'pr-stale',type:'negative',icon:'🧟',name:'PR SIN REVIEW',effect:{stab:-5,bugs:1,stress:8},q:'¿Cómo mejoramos el proceso de PR?'},
+  {id:'grooming',type:'ceremony',icon:'🛠️',name:'GROOMING',effect:{stab:4,qa:1},q:'¿Nuestras historias están bien definidas?'},
+  {id:'mtg-email',type:'negative',icon:'📧',name:'MEETING=EMAIL',effect:{stab:-2,stress:10},q:'¿Cuántas reuniones podríamos eliminar?'},
+];
+const DESCS={
+  'planning':'Estimaciones hechas con optimismo infinito.',
+  'us-ok':'Una historia completada. El equipo existe.',
+  'scope':'"Solo era un cambio pequeño." No lo era.',
+  'coffee':'Silencio sagrado. Cafeína. Esperanza.',
+  'bug':'QA encontró algo que nadie vio venir. Pánico.',
+  'daily-long':'La daily de 15 min duró 60. Sin razón.',
+  'code-rev':'Se revisó el código. Los bugs tiemblan.',
+  'tech-debt':'El legacy code atacó de nuevo.',
+  'po-change':'El PO tuvo una "nueva visión". El sprint llora.',
+  'sprint-rev':'Los stakeholders vieron el demo. Tienen feedback.',
+  'prod-inc':'🔥 PRODUCCIÓN EN FUEGO. Todos al chat. Ahora.',
+  'qa-pass':'QA aprobó. El feature existe de verdad.',
+  'dep-fri':'Deploy viernes 5pm. Que Dios los ayude.',
+  'retro-c':'Post-its. Sentimientos. Mejoras reales (tal vez).',
+  'pair-prog':'Dos cerebros, un bug menos. Activado.',
+  'dep-hell':'Esperando a otro equipo. Indefinidamente.',
+  'velocity':'El equipo fue más rápido de lo esperado. ¿Magia?',
+  'pr-stale':'El PR lleva 3 días. El autor ya no recuerda.',
+  'grooming':'Las historias tienen AC. Milagro.',
+  'mtg-email':'Esta reunión no necesitaba existir.',
+  'blocked-c':'Dependencia bloqueante. Espera infinita.',
+  'retro-gate':'Bonus de retrospectiva. Aprendizaje gratis.',
+  'free-c':'Un día milagrosamente tranquilo. Raro.',
+};
+
+// Board: 7×7 grid with corner cells (1,1)(1,7)(7,1)(7,7) and 5 edge cells per side
+// Position index: 0=TL corner, 1-5=top, 6=TR corner, 7-11=right, 12=BR corner, 13-17=bottom, 18=BL corner, 19-23=left
+// Total positions = 24
+
+// ─── STATE ───────────────────────────────────────
+let G={
+  players:[],currentPlayer:0,
+  stability:100,stress:0,qa:5,bugs:0,
+  round:1,maxRounds:2,
+  log:[],insights:[],eventHist:[],
+  rolling:false,
+  roundCells:[],usedIds:new Set(),
+  positions:[],
+  activeVote:null,teamVotes:{},
+  lappedThis:new Set(),
+  endAfter:false,nextRoundAfter:false,
+};
+
+const TOTAL_POS=24;
+
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+
+// ─── SETUP ───────────────────────────────────────
+let cfg={count:0,rounds:2};
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+id).classList.add('on');
+}
+function toggleHow(){const e=document.getElementById('how');e.style.display=e.style.display==='none'?'block':'none'}
+
+function setCount(n){
+  cfg.count=n;
+  const defs=['Ana (Dev)','Pedro (Dev)','Luis (QA)','Maria (PO)','Carlos (Dev)','Sofia (Dev)','Juan (SM)','Lucia (Dev)','Tomas (Dev)'];
+  const c=document.getElementById('name-inputs');
+  c.innerHTML='';
+  for(let i=0;i<n;i++){
+    c.innerHTML+=`<div class="p-row"><span style="color:${COLORS[i]};font-size:16px">${EMOJIS[i]}</span><input id="pn${i}" value="${defs[i]}"/></div>`;
+  }
+  checkGoBtn();
+}
+function setRounds(n){
+  cfg.rounds=n;
+  document.getElementById('rb2').style.opacity=n===2?'1':'0.5';
+  document.getElementById('rb3').style.opacity=n===3?'1':'0.5';
+  checkGoBtn();
+}
+function checkGoBtn(){
+  if(cfg.count&&cfg.rounds)document.getElementById('go-btn').style.display='block';
+}
+
+function pickRoundCells(){
+  let avail=ALL_CELLS.filter(c=>!G.usedIds.has(c.id));
+  if(avail.length<20){G.usedIds=new Set();avail=[...ALL_CELLS]}
+  const chosen=shuffle(avail).slice(0,20);
+  chosen.forEach(c=>G.usedIds.add(c.id));
+  G.roundCells=chosen;
+}
+
+// Map position index to cell:
+// 0=corner TL, 1-5=top edge, 6=corner TR, 7-11=right edge, 12=corner BR, 13-17=bottom edge, 18=corner BL, 19-23=left edge
+function getCell(pos){
+  if(pos===0)return{id:'start-c',type:'corner-type',icon:'🚀',name:'SPRINT START',effect:null,q:null};
+  if(pos===6)return{id:'blocked-c',type:'blocker',icon:'🔒',name:'BLOCKED!',effect:{stab:-5,stress:15},q:'¿Qué nos bloqueó más este sprint?'};
+  if(pos===12)return{id:'retro-gate',type:'ceremony',icon:'🎯',name:'RETRO GATE',effect:{stab:10,qa:2,stress:-10},q:null};
+  if(pos===18)return{id:'free-c',type:'positive',icon:'☕',name:'FREE PARKING',effect:{stab:5,stress:-10},q:null};
+  // edge cells
+  const edgePos=[1,2,3,4,5, 7,8,9,10,11, 13,14,15,16,17, 19,20,21,22,23];
+  const idx=edgePos.indexOf(pos);
+  return idx>=0?G.roundCells[idx]:null;
+}
+
+// ─── START GAME ──────────────────────────────────
+function startGame(){
+  const inps=document.querySelectorAll('[id^=pn]');
+  G.players=Array.from(inps).map((inp,i)=>({name:inp.value||`P${i+1}`,color:COLORS[i],emoji:EMOJIS[i],qa:1}));
+  G.positions=new Array(G.players.length).fill(0);
+  G.currentPlayer=0;G.stability=100;G.stress=0;G.qa=5;G.bugs=0;
+  G.round=1;G.maxRounds=cfg.rounds;G.log=[];G.insights=[];G.eventHist=[];
+  G.usedIds=new Set();G.rolling=false;G.lappedThis=new Set();G.endAfter=false;G.nextRoundAfter=false;
+  pickRoundCells();
+  buildBoard();
+  renderPlayers();
+  updateStats();
+  updateTurnUI();
+  addLog('🚀 Sprint iniciado!','g');
+  document.getElementById('roll-btn').disabled=false;
+  go('game');
+  setTimeout(resizeBoard,60);
+}
+
+// ─── BOARD BUILD ─────────────────────────────────
+// Grid 7×7:
+// (row,col) 1-indexed
+// Corner TL=(1,1), TR=(1,7), BR=(7,7), BL=(7,1)
+// Top edge: row=1, col=2..6 → pos 1-5
+// Right edge: col=7, row=2..6 → pos 7-11
+// Bottom edge: row=7, col=6..2 → pos 13-17
+// Left edge: col=1, row=6..2 → pos 19-23
+// Center: rows 2-6, cols 2-6
+
+function buildBoard(){
+  const board=document.getElementById('board');
+  board.innerHTML='';
+  // We'll render row by row, 7 rows × 7 cols
+  for(let r=1;r<=7;r++){
+    for(let c=1;c<=7;c++){
+      const div=document.createElement('div');
+      // Determine what goes here
+      if(r>=2&&r<=6&&c>=2&&c<=6){
+        // center
+        if(r===2&&c===2){
+          div.className='bc bc-center';
+          div.style.gridColumn='2/7';div.style.gridRow='2/7';
+          div.innerHTML=`<div class="center-txt">APROBADO<br>POR QA™</div><div class="center-sub">SCRUM RETRO</div><div class="round-pill" id="center-round">VUELTA 1</div>`;
+          board.appendChild(div);
         }
+        // skip cells covered by center span
+        continue;
+      }
+      // Determine position index and edge side
+      let pos=-1,side='';
+      if(r===1&&c===1){pos=0;side='corner'}
+      else if(r===1&&c===7){pos=6;side='corner'}
+      else if(r===7&&c===7){pos=12;side='corner'}
+      else if(r===7&&c===1){pos=18;side='corner'}
+      else if(r===1){pos=c-1;side='top'}        // col 2-6 → pos 1-5
+      else if(c===7){pos=r+5;side='right'}       // row 2-6 → pos 7-11
+      else if(r===7){pos=19-c;side='bottom'}     // col 6-2 → pos 13-17
+      else if(c===1){pos=25-r;side='left'}       // row 6-2 → pos 19-23
+      if(pos<0){continue}
+      const cell=getCell(pos);
+      if(!cell){continue}
+      if(side==='corner'){
+        div.className=`bc bc-corner`;
+        div.innerHTML=`<span>${cell.icon}</span><span class="cn-label">${cell.name}</span>`;
+        renderCornerTokens(div,pos);
+      } else {
+        div.className=`bc bc-${side} bc-${cell.type}`;
+        const tokens=G.positions.map((p,pi)=>p===pos?`<div class="tok" style="background:${G.players[pi].color}">${G.players[pi].emoji}</div>`:'').join('');
+        const isCur=G.positions[G.currentPlayer]===pos;
+        if(isCur)div.classList.add('bc-active');
+        div.innerHTML=`<div class="cell-icon">${cell.icon}</div><div class="cell-name">${cell.name}</div><div class="cell-tokens">${tokens}</div>`;
+      }
+      div.dataset.pos=pos;
+      board.appendChild(div);
+    }
+  }
+}
 
-        socket.on("state", (s) => {
-            document.getElementById('stb').innerText = s.stability;
-            document.getElementById('qa').innerText = s.qaApprovals;
-            const cur = s.players[s.currentIdx];
-            document.getElementById('turn').innerText = cur ? cur.name : "---";
-            players = s.players;
-            renderPlayers();
-            if(s.waitingForVote) { showModal(s.activeCell, cur); }
-        });
+function renderCornerTokens(div,pos){
+  let tc=div.querySelector('.corner-tokens');
+  if(!tc){tc=document.createElement('div');tc.className='corner-tokens';tc.style.cssText='display:flex;flex-wrap:wrap;gap:1px;justify-content:center;margin-top:3px';div.appendChild(tc)}
+  tc.innerHTML=G.positions.map((p,pi)=>p===pos?`<div class="tok" style="background:${G.players[pi].color}">${G.players[pi].emoji}</div>`:'').join('');
+}
 
-        function renderPlayers() {
-            document.querySelectorAll('.player').forEach(p => p.remove());
-            players.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'player';
-                div.style.background = p.color;
-                div.innerText = p.name[0].toUpperCase();
-                // Lógica de posición simplificada
-                const cell = document.getElementById(`cell-${p.pos}`);
-                if(cell) {
-                    div.style.left = (cell.offsetLeft + 5) + 'px';
-                    div.style.top = (cell.offsetTop + 5) + 'px';
-                }
-                document.getElementById('board').appendChild(div);
-            });
-        }
+// ─── PLAYERS ─────────────────────────────────────
+function renderPlayers(){
+  document.getElementById('players-list').innerHTML=G.players.map((p,i)=>`
+    <div class="player-item${i===G.currentPlayer?' active-p':''}" style="${i===G.currentPlayer?`border-left-color:${p.color}`:''}">
+      <div class="pi-emoji">${p.emoji}</div>
+      <div class="pi-info">
+        <div class="pi-name" style="color:${p.color}">${p.name}</div>
+        <div class="pi-stats">Pos ${G.positions[i]+1}/24 · QA: ${p.qa} ✓</div>
+      </div>
+    </div>
+  `).join('');
+}
 
-        const gridMap = [[1,1],[1,2],[1,3],[1,4],[1,5],[1,6],[1,7],[2,7],[3,7],[4,7],[5,7],[6,7],[7,7],[7,6],[7,5],[7,4],[7,3],[7,2],[7,1],[6,1],[5,1],[4,1],[3,1],[2,1]];
-        window.onload = () => {
-            const b = document.getElementById('board');
-            for(let i=0; i<24; i++) {
-                const c = document.createElement('div');
-                c.className = 'cell'; c.id = `cell-${i}`;
-                c.style.gridRow = gridMap[i][0]; c.style.gridColumn = gridMap[i][1];
-                c.innerText = i === 0 ? "START" : "TASK";
-                b.appendChild(c);
-            }
-        };
+// ─── STATS ───────────────────────────────────────
+function updateStats(){
+  G.stability=Math.max(0,Math.min(100,G.stability));
+  G.stress=Math.max(0,Math.min(100,G.stress));
+  G.qa=Math.max(0,G.qa);G.bugs=Math.max(0,G.bugs);
+  document.getElementById('sv').textContent=G.stability;
+  document.getElementById('stv').textContent=G.stress;
+  document.getElementById('qa-num').textContent=G.qa;
+  document.getElementById('bug-num').textContent=G.bugs;
+  document.getElementById('rnd-num').innerHTML=`${G.round}/<span id="rnd-max">${G.maxRounds}</span>`;
+  const sf=document.getElementById('bf-s');
+  sf.style.width=G.stability+'%';
+  sf.style.background=G.stability>70?'var(--g)':G.stability>40?'var(--y)':'var(--r)';
+  document.getElementById('bf-st').style.width=G.stress+'%';
+  const cr=document.getElementById('center-round');
+  if(cr)cr.textContent=`VUELTA ${G.round}/${G.maxRounds}`;
+}
 
-        function showModal(cell, p) {
-            document.getElementById('modal').style.display = 'flex';
-            document.getElementById('m-title').innerText = cell.n;
-            document.getElementById('m-q').innerText = cell.q;
-            document.getElementById('vote-btns').style.display = 'none';
-            document.getElementById('confBtn').style.display = 'block';
-        }
+function updateTurnUI(){
+  const p=G.players[G.currentPlayer];
+  const tb=document.getElementById('turn-box');
+  tb.style.borderColor=p.color;
+  document.getElementById('turn-name').textContent=`${p.emoji} ${p.name}`;
+  document.getElementById('turn-name').style.color=p.color;
+}
 
-        function showVote() {
-            document.getElementById('vote-btns').style.display = 'block';
-            document.getElementById('confBtn').style.display = 'none';
-        }
+// ─── DICE & MOVE ─────────────────────────────────
+function rollDice(){
+  if(G.rolling)return;
+  G.rolling=true;
+  document.getElementById('roll-btn').disabled=true;
+  let cnt=0;
+  const iv=setInterval(()=>{
+    document.getElementById('dice').textContent=DICE[Math.floor(Math.random()*6)];
+    if(++cnt>=10){
+      clearInterval(iv);
+      const roll=Math.floor(Math.random()*6)+1;
+      document.getElementById('dice').textContent=DICE[roll-1];
+      document.getElementById('roll-msg').textContent=`Resultado: ${roll}`;
+      movePlayer(roll);
+    }
+  },80);
+}
 
-        function vote(isPos) {
-            socket.emit("vote", {isPositive: isPos, answer: document.getElementById('m-ans').value});
-            document.getElementById('modal').style.display = 'none';
-        }
-    </script>
+function movePlayer(steps){
+  const oldPos=G.positions[G.currentPlayer];
+  const newPos=(oldPos+steps)%TOTAL_POS;
+  const lapped=(oldPos+steps)>=TOTAL_POS;
+  G.positions[G.currentPlayer]=newPos;
+  const p=G.players[G.currentPlayer];
+  addLog(`${p.emoji} ${p.name} +${steps} → pos ${newPos+1}`,'');
+  if(lapped){
+    G.lappedThis.add(G.currentPlayer);
+    G.qa+=2;
+    addLog(`🔄 ${p.name} completó vuelta ${G.round}!`,'g');
+    if(G.lappedThis.size>=G.players.length){
+      if(G.round>=G.maxRounds)G.endAfter=true;
+      else G.nextRoundAfter=true;
+    }
+  }
+  buildBoard();renderPlayers();updateStats();
+  setTimeout(()=>triggerEvent(newPos),350);
+}
+
+// ─── EVENT ───────────────────────────────────────
+function triggerEvent(pos){
+  const cell=getCell(pos);
+  if(!cell||pos===0){nextTurn();return}
+  const eff=cell.effect||{};
+  if(eff.stab)G.stability+=eff.stab;
+  if(eff.stress)G.stress+=eff.stress;
+  if(eff.qa){G.qa+=eff.qa;G.players[G.currentPlayer].qa+=Math.max(0,eff.qa)}
+  if(eff.bugs)G.bugs+=eff.bugs;
+  updateStats();
+  G.eventHist.push({cell:cell.name,player:G.players[G.currentPlayer].name,effect:eff,round:G.round});
+  // Update last card in panel
+  const lc=document.getElementById('last-card');
+  lc.innerHTML=`<div class="lc-icon">${cell.icon}</div><div class="lc-name">${cell.name}</div><div class="lc-desc">${DESCS[cell.id]||''}</div>`;
+  addLog(`${cell.icon} ${cell.name} → ${effStr(eff)}`,eff.stab&&eff.stab<0?'r':eff.stab&&eff.stab>0?'g':'y');
+  showOverlay(cell);
+}
+
+function effStr(e){
+  const p=[];
+  if(e.stab)p.push(`Stability${e.stab>0?'+':''}${e.stab}`);
+  if(e.stress)p.push(`Stress${e.stress>0?'+':''}${e.stress}`);
+  if(e.qa)p.push(`QA${e.qa>0?'+':''}${e.qa}`);
+  if(e.bugs)p.push(`Bugs${e.bugs>0?'+':''}${e.bugs}`);
+  return p.join(', ')||'Sin efecto';
+}
+
+function showOverlay(cell){
+  document.getElementById('ov-title').textContent=cell.name;
+  document.getElementById('ov-icon').textContent=cell.icon;
+  document.getElementById('ov-desc').textContent=DESCS[cell.id]||'Evento del sprint.';
+  const eff=cell.effect||{};
+  document.getElementById('ov-efx').innerHTML=[
+    ['📈 Stability',eff.stab],['😤 Stress',eff.stress],['✅ QA',eff.qa],['🐛 Bugs',eff.bugs]
+  ].filter(([,v])=>v).map(([k,v])=>`<span class="${v>0?'eff-g':'eff-r'}">${k} ${v>0?'+':''}${v}</span>`).join('');
+
+  G.activeVote=null;G.teamVotes={};
+  const retroEl=document.getElementById('ov-retro');
+  if(cell.q&&Math.random()<0.65){
+    retroEl.style.display='flex';
+    document.getElementById('ov-q').textContent='💬 '+cell.q;
+    const ap=G.players[G.currentPlayer];
+    document.getElementById('ov-active-lbl').textContent=`🎯 ${ap.emoji} ${ap.name} — TÚ RESPONDES:`;
+    document.getElementById('ov-active-votes').innerHTML=[
+      ['😄','Muy bien','good','g'],['😐','Regular','neutral','y'],['😰','Caos total','bad','r']
+    ].map(([em,lbl,val,c])=>`<button class="btn btn-${c} btn-xs" onclick="recordActive('${val}',this)" style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:70px"><span style="font-size:22px">${em}</span><span>${lbl}</span></button>`).join('');
+    document.getElementById('ov-comment').value='';
+    const others=G.players.map((p,i)=>({p,i})).filter(({i})=>i!==G.currentPlayer);
+    document.getElementById('team-vote-rows').innerHTML=others.length>0
+      ?others.map(({p,i})=>`
+          <div class="team-vote-row">
+            <span style="color:${p.color};font-size:12px">${p.emoji}</span>
+            <span style="color:${p.color};flex:1">${p.name}</span>
+            ${[['😄','good'],['😐','neutral'],['😰','bad']].map(([em,v])=>
+              `<button class="btn btn-xs" style="border-color:var(--border);min-width:44px" onclick="recordTeam(${i},'${v}',this)"><span style="font-size:18px">${em}</span></button>`
+            ).join('')}
+            <span id="tv${i}" style="color:var(--g);font-size:4px;display:none">✓</span>
+          </div>`).join('')
+      :'<div style="font-size:3.5px;color:var(--muted)">Solo tú en el equipo — solo tú votas.</div>';
+  } else {
+    retroEl.style.display='none';
+  }
+  document.getElementById('overlay').style.display='flex';
+}
+
+function recordActive(val,btn){
+  G.activeVote=val;
+  document.querySelectorAll('#ov-active-votes .btn').forEach(b=>{b.style.opacity='0.4';b.style.transform=''});
+  btn.style.opacity='1';btn.style.transform='scale(1.1)';
+}
+function recordTeam(pi,val,btn){
+  G.teamVotes[pi]=val;
+  btn.parentElement.querySelectorAll('.btn').forEach(b=>b.style.opacity='0.4');
+  btn.style.opacity='1';
+  const tv=document.getElementById('tv'+pi);
+  if(tv)tv.style.display='inline';
+}
+
+function closeEvent(){
+  const q=document.getElementById('ov-q').textContent.replace('💬 ','');
+  const comment=document.getElementById('ov-comment').value.trim();
+  if(G.activeVote||comment||Object.keys(G.teamVotes).length>0){
+    G.insights.push({q,active:G.activeVote,team:{...G.teamVotes},comment,player:G.players[G.currentPlayer].name,round:G.round});
+  }
+  document.getElementById('overlay').style.display='none';
+  if(G.endAfter){G.endAfter=false;triggerRetro();return}
+  if(G.nextRoundAfter){G.nextRoundAfter=false;startNextRound();return}
+  if(G.stability<=0){triggerRetro();return}
+  nextTurn();
+}
+
+function nextTurn(){
+  G.rolling=false;
+  G.currentPlayer=(G.currentPlayer+1)%G.players.length;
+  document.getElementById('roll-btn').disabled=false;
+  document.getElementById('roll-msg').textContent='Esperando turno...';
+  buildBoard();renderPlayers();updateTurnUI();
+}
+
+function startNextRound(){
+  G.round++;G.lappedThis=new Set();
+  pickRoundCells();
+  addLog(`🔄 Vuelta ${G.round} — nuevas cartas!`,'p');
+  nextTurn();
+  buildBoard();updateStats();
+}
+
+// ─── LOG ─────────────────────────────────────────
+function addLog(msg,cls=''){
+  G.log.unshift({msg,cls});
+  if(G.log.length>25)G.log.pop();
+  document.getElementById('log').innerHTML=G.log.map(l=>`<div class="log-entry${l.cls?' log-'+l.cls:''}">${l.msg}</div>`).join('');
+}
+
+// ─── RETRO / FINAL ───────────────────────────────
+function triggerRetro(){
+  go('retro');
+  const pos=G.eventHist.filter(e=>e.effect&&(e.effect.stab||0)>0);
+  const neg=G.eventHist.filter(e=>e.effect&&(e.effect.stab||0)<0);
+  const stab=G.stability;
+  const col=stab>70?'var(--g)':stab>40?'var(--y)':'var(--r)';
+  const status=stab>70?'✅ SPRINT SURVIVED!':stab>40?'⚠️ SOBREVIVIMOS (DE MILAGRO)':'💀 SPRINT COLLAPSE';
+  let html=`<div style="font-size:8px;color:${col};text-align:center;margin-bottom:14px">${status}</div>`;
+  html+=`<div class="retro-section"><div class="retro-sh" style="color:var(--g)">🟢 QUÉ AYUDÓ:</div>
+    ${pos.slice(0,5).map(e=>`<div class="retro-item">• ${e.cell} — ${e.player} (v${e.round})</div>`).join('')||'<div class="retro-item">Nada destacado 😅</div>'}
+  </div>`;
+  html+=`<div class="retro-section"><div class="retro-sh" style="color:var(--r)">🔴 QUÉ DAÑÓ:</div>
+    ${neg.slice(0,5).map(e=>`<div class="retro-item">• ${e.cell} — ${e.player} (v${e.round})</div>`).join('')||'<div class="retro-item">Sin incidentes 🤯</div>'}
+  </div>`;
+  if(G.insights.length>0){
+    const vmap={'good':'😄 Muy bien','neutral':'😐 Regular','bad':'😰 Caos'};
+    html+=`<div class="retro-section"><div class="retro-sh" style="color:var(--p)">💬 REFLEXIONES:</div>`;
+    G.insights.forEach(ins=>{
+      html+=`<div class="retro-item">• <span style="color:var(--y)">${ins.player}</span>: ${vmap[ins.active]||'—'}<br>&nbsp;&nbsp;→ ${ins.q}`;
+      const tv=Object.values(ins.team).map(v=>vmap[v]).join(', ');
+      if(tv)html+=`<br>&nbsp;&nbsp;<span style="color:var(--p)">Equipo: ${tv}</span>`;
+      if(ins.comment)html+=`<br>&nbsp;&nbsp;<span style="color:#aaa">"${ins.comment}"</span>`;
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+=`<div class="retro-section"><div class="retro-sh" style="color:var(--y)">📊 MÉTRICAS:</div>
+    <div class="retro-item">• Sprint Stability: ${G.stability}/100</div>
+    <div class="retro-item">• Team Stress: ${G.stress}/100</div>
+    <div class="retro-item">• Bugs: ${G.bugs} · QA Approvals: ${G.qa}</div>
+    <div class="retro-item">• Vueltas: ${G.round}/${G.maxRounds}</div>
+  </div>`;
+  document.getElementById('retro-content').innerHTML=html;
+}
+
+function showFinal(){
+  go('final');
+  const stab=G.stability;
+  let icon,text,col;
+  if(stab>70){icon='🏆';text='SPRINT SURVIVED!';col='var(--g)'}
+  else if(stab>30){icon='😅';text='SOBREVIVIMOS<br>(DE MILAGRO)';col='var(--y)'}
+  else{icon='💀';text='SPRINT FAILED';col='var(--r)'}
+  document.getElementById('v-icon').textContent=icon;
+  document.getElementById('v-text').innerHTML=`<div style="font-size:clamp(7px,2vw,12px);color:${col}">${text}</div>`;
+  const ins=[];
+  if(G.bugs>3)ins.push('🐛 Alta densidad de bugs — revisar testing.');
+  if(G.stress>60)ins.push('🔥 Stress alto — evaluar carga del equipo.');
+  if(G.qa<3)ins.push('✅ Pocos QA approvals — fortalecer proceso QA.');
+  G.insights.filter(i=>i.comment).forEach(i=>ins.push(`💬 "${i.comment}" — ${i.player}`));
+  if(ins.length===0)ins.push('🚀 El equipo funcionó excelente. ¡Seguir así!');
+  document.getElementById('final-insights').innerHTML=`<div style="font-size:5px;color:var(--g);margin-bottom:10px">🧠 APRENDIZAJES:</div>
+    ${ins.map(i=>`<div class="retro-item">• ${i}</div>`).join('')}`;
+}
+
+// ─── BOARD RESIZE ────────────────────────────────
+function resizeBoard(){
+  const rb=document.getElementById('right-board');
+  if(!rb||!rb.offsetWidth)return;
+  const W=rb.clientWidth-20;
+  const H=rb.clientHeight-20;
+  const size=Math.min(W,H);
+  // 7 tracks: corner=1.35x, 5 normal, 6 gaps of 2px
+  // size = cell*(5 + 1.35*2) + 2*6  → cell = (size-12)/7.7
+  const cellPx=Math.floor((size-12)/7.7);
+  const board=document.getElementById('board');
+  if(!board)return;
+  board.style.setProperty('--cell-px', cellPx+'px');
+  board.style.width=size+'px';
+  board.style.height=size+'px';
+}
+window.addEventListener('resize', resizeBoard);
+
+// ─── DOWNLOAD REPORT ─────────────────────────────
+function downloadReport(){
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('es-GT',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr=now.toLocaleTimeString('es-GT',{hour:'2-digit',minute:'2-digit'});
+  const vmap={'good':'😄 Muy bien','neutral':'😐 Regular','bad':'😰 Caos total'};
+
+  const stab=G.stability;
+  const status=stab>70?'✅ SPRINT SURVIVED':stab>40?'⚠️ SOBREVIVIMOS (DE MILAGRO)':'💀 SPRINT COLLAPSE';
+
+  let html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Reporte — Aprobado por QA™</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:#f8f9fa;color:#1a1a2e;padding:32px;max-width:800px;margin:0 auto}
+  h1{font-size:26px;color:#22c55e;margin-bottom:4px}
+  .sub{font-size:12px;color:#64748b;margin-bottom:28px}
+  .status{font-size:18px;font-weight:700;padding:12px 20px;border-radius:8px;display:inline-block;margin-bottom:24px;background:${stab>70?'#dcfce7;color:#15803d':stab>40?'#fef9c3;color:#854d0e':'#fee2e2;color:#991b1b'}}
+  .section{margin-bottom:24px}
+  .section h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b;border-bottom:2px solid #e2e8f0;padding-bottom:6px;margin-bottom:12px}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .metric{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center}
+  .metric-val{font-size:28px;font-weight:700;margin-bottom:4px}
+  .metric-lbl{font-size:11px;color:#64748b}
+  .ev-table{width:100%;border-collapse:collapse;font-size:12px}
+  .ev-table th{background:#f1f5f9;padding:8px 12px;text-align:left;font-size:11px;color:#475569}
+  .ev-table td{padding:8px 12px;border-bottom:1px solid #f1f5f9}
+  .ev-table tr:last-child td{border-bottom:none}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+  .tag-g{background:#dcfce7;color:#15803d}
+  .tag-r{background:#fee2e2;color:#991b1b}
+  .tag-y{background:#fef9c3;color:#854d0e}
+  .tag-p{background:#f3e8ff;color:#7e22ce}
+  .retro-card{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:14px;margin-bottom:10px}
+  .retro-q{font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:8px}
+  .retro-active{font-size:12px;margin-bottom:6px}
+  .retro-team{font-size:11px;color:#475569;margin-bottom:4px}
+  .retro-comment{font-size:12px;font-style:italic;color:#64748b;border-left:3px solid #a855f7;padding-left:10px;margin-top:6px}
+  .player-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:12px}
+  .player-row:last-child{border-bottom:none}
+  .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .footer{margin-top:32px;padding-top:16px;border-top:2px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center}
+</style></head><body>
+
+<h1>🎲 Aprobado por QA™</h1>
+<div class="sub">Reporte de sesión · ${dateStr} · ${timeStr}</div>
+
+<div class="status">${status}</div>
+
+<div class="metrics">
+  <div class="metric"><div class="metric-val" style="color:${stab>70?'#22c55e':stab>40?'#eab308':'#ef4444'}">${stab}</div><div class="metric-lbl">Sprint Stability</div></div>
+  <div class="metric"><div class="metric-val" style="color:#ef4444">${G.stress}</div><div class="metric-lbl">Team Stress</div></div>
+  <div class="metric"><div class="metric-val" style="color:#eab308">${G.qa}</div><div class="metric-lbl">QA Approvals</div></div>
+  <div class="metric"><div class="metric-val" style="color:#ef4444">${G.bugs}</div><div class="metric-lbl">Bugs</div></div>
+</div>
+
+<div class="section">
+  <h2>👥 Participantes</h2>
+  ${G.players.map(p=>`<div class="player-row"><div class="dot" style="background:${p.color}"></div><span>${p.emoji} ${p.name}</span></div>`).join('')}
+</div>`;
+
+  // Events table
+  if(G.eventHist.length>0){
+    html+=`<div class="section"><h2>📋 Eventos del Sprint</h2>
+    <table class="ev-table">
+      <tr><th>Vuelta</th><th>Jugador</th><th>Evento</th><th>Efecto Stability</th></tr>
+      ${G.eventHist.map(e=>{
+        const s=e.effect&&e.effect.stab?e.effect.stab:0;
+        const tag=s>0?'tag-g':s<0?'tag-r':'tag-y';
+        const label=s>0?`+${s}`:s<0?`${s}`:'—';
+        return `<tr><td>${e.round}</td><td>${e.player}</td><td>${e.cell}</td><td><span class="tag ${tag}">${label}</span></td></tr>`;
+      }).join('')}
+    </table></div>`;
+  }
+
+  // Reflections
+  if(G.insights.length>0){
+    html+=`<div class="section"><h2>💬 Reflexiones del Equipo</h2>`;
+    G.insights.forEach(ins=>{
+      const playerNames=G.players.map(p=>p.name);
+      const teamVotesHtml=Object.entries(ins.team).map(([pi,v])=>{
+        const pname=G.players[pi]?G.players[pi].name:`Jugador ${pi}`;
+        return `<span class="tag tag-p" style="margin-right:4px">${pname}: ${vmap[v]||v}</span>`;
+      }).join('');
+      html+=`<div class="retro-card">
+        <div class="retro-q">${ins.q}</div>
+        <div class="retro-active"><strong>${ins.player}:</strong> ${vmap[ins.active]||'Sin respuesta'}</div>
+        ${teamVotesHtml?`<div class="retro-team">${teamVotesHtml}</div>`:''}
+        ${ins.comment?`<div class="retro-comment">"${ins.comment}"</div>`:''}
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // Learnings
+  const ins=[];
+  if(G.bugs>3)ins.push('Alta densidad de bugs — revisar proceso de testing.');
+  if(G.stress>60)ins.push('Team stress elevado — evaluar carga de trabajo.');
+  if(G.qa<3)ins.push('Pocos QA approvals — fortalecer proceso QA.');
+  G.insights.filter(i=>i.comment).forEach(i=>ins.push(`"${i.comment}" — ${i.player}`));
+  if(ins.length>0){
+    html+=`<div class="section"><h2>🧠 Aprendizajes</h2>
+      ${ins.map(i=>`<div style="font-size:12px;padding:6px 0;border-bottom:1px solid #f1f5f9">• ${i}</div>`).join('')}
+    </div>`;
+  }
+
+  html+=`<div class="footer">Generado por Aprobado por QA™ · Scrum Retro Board Game · ${dateStr}</div>
+</body></html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`reporte-sprint-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.html`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// init
+setRounds(2);
+</script>
 </body>
 </html>

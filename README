@@ -1,18 +1,100 @@
-# Aprobado por QA™ - Setup
+# 🎲 Aprobado por QA™
+### Scrum Retro Board Game — Monopoly Edition
 
-### 1. Servidor (Render)
-- Crea un Web Service en Render.
-- Conecta tu repo de GitHub.
-- Render detectará el `package.json` y ejecutará `npm start`.
-- Copia la URL que te da (ej: `https://qa-retro.onrender.com`).
+Un juego cooperativo de retrospectiva Scrum con tablero tipo Monopoly. El equipo sobrevive el sprint juntos, enfrenta eventos reales del trabajo y reflexiona en tiempo real.
 
-### 2. Cliente (GitHub Pages)
-- En `index.html`, busca `REPLACE_WITH_YOUR_RENDER_URL` y pega tu URL de Render.
-- Sube el archivo a GitHub.
-- Activa GitHub Pages en Settings.
+---
 
-### Reglas de 2 vueltas
-- El juego monitorea `laps`. 
-- Al caer en una casilla, el jugador responde y el equipo vota. 
-- 👍 Bien: +5 STB / +1 QA.
-- 👎 Mal: -10 STB.
+## 🚀 Features
+
+- Tablero perimetral tipo Monopoly con celdas uniformes
+- Panel lateral con stats en tiempo real (Sprint Stability, Team Stress, QA Approvals, Bugs)
+- 20 cartas únicas por vuelta — sin repeticiones
+- Sistema de votación por rol: jugador activo responde, equipo vota independiente
+- 2–3 vueltas configurables
+- Retrospectiva automática al final
+- **Descarga de reporte PDF** con métricas, eventos y reflexiones del equipo
+- Hasta 9 jugadores (hotseat multiplayer)
+
+---
+
+## 🛠 Stack
+
+- HTML + CSS + Vanilla JS (sin frameworks)
+- Express.js como servidor estático
+- Sin base de datos ni backend complejo
+
+---
+
+## 📦 Instalación local
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/TU_USUARIO/aprobado-por-qa.git
+cd aprobado-por-qa
+
+# Instalar dependencias
+npm install
+
+# Correr en local
+npm start
+# → http://localhost:3000
+```
+
+---
+
+## ☁️ Deploy en Render
+
+1. Crear cuenta en [render.com](https://render.com)
+2. **New → Web Service**
+3. Conectar este repositorio de GitHub
+4. Configurar:
+
+| Campo | Valor |
+|---|---|
+| **Environment** | `Node` |
+| **Build Command** | `npm install` |
+| **Start Command** | `npm start` |
+| **Plan** | Free |
+
+5. Click **Create Web Service** — Render despliega automáticamente.
+
+Cada push a `main` redespliega automáticamente.
+
+---
+
+## 🎮 Cómo jugar
+
+1. Configura el equipo (2–9 jugadores) y número de vueltas (2–3)
+2. Cada jugador tira el dado en su turno
+3. Cae en una casilla → ocurre un evento con efectos en las métricas
+4. Aparece pregunta retro: el jugador activo responde, el resto vota
+5. Al terminar las vueltas → Retrospectiva automática
+6. Descarga el reporte para llevar registro de la sesión
+
+---
+
+## 📁 Estructura
+
+```
+aprobado-por-qa/
+├── index.html      # El juego completo (single file)
+├── server.js       # Servidor Express
+├── package.json    # Dependencias
+└── README.md
+```
+
+---
+
+## 📄 Reporte de sesión
+
+Al finalizar el juego, el botón **⬇ DESCARGAR REPORTE** genera un archivo HTML con:
+- Estado final del sprint (Stability, Stress, QA, Bugs)
+- Lista de participantes
+- Tabla de eventos ocurridos por vuelta
+- Reflexiones con votos del equipo y comentarios
+- Aprendizajes clave detectados automáticamente
+
+---
+
+*Hecho con 💚 para equipos Scrum que sobreviven sprints juntos.*

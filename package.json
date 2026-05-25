@@ -1,16 +1,11 @@
 {
-  "name": "aprobado-por-qa-server",
+  "name": "aprobado-por-qa",
   "version": "1.0.0",
-  "description": "Servidor multijugador para la Retro Aprobado por QA",
-  "main": "server.js",
+  "description": "Scrum Retro Board Game — Monopoly themed",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.7.2"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "express": "^4.18.2"
   }
 }
