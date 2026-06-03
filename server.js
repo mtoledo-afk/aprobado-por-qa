@@ -64,10 +64,16 @@ function shuffle(a) {
   return b;
 }
 
+function genRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return 'RETRO-' + Array.from({length:4}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
 function freshState() {
   return {
     phase: "config",      // config | lobby | game | event | retro | final
     hostId: null,
+    roomCode: genRoomCode(),
     sprintTitle: "",
     players: [],
     currentPlayer: 0,
@@ -358,7 +364,7 @@ io.on("connection", (socket) => {
   // Assign host to first connection
   if (!G.hostId) {
     G.hostId = socket.id;
-    socket.emit("youAreHost");
+    socket.emit("youAreHost", { roomCode: G.roomCode });
     broadcast();
   }
 });
